@@ -2,6 +2,10 @@
 
 O objeto do projeto é criar um modelo de framework simples, que contenha as funções básicas de roteamento, controllers, models, middlewares e views.
 
+Veja abaixo a estrutura de pastas e os arquivos principais do framework
+
+# Diretórios
+
 ## App
 Representa o conjunto de arquivos criados pelo usuário.
 Sendo estes organizados na estrutura
@@ -13,9 +17,11 @@ Sendo estes organizados na estrutura
 ## System
 Representa o conjunto de arquivos do framework, como o Router, Request, Response e classes base que podem ser usadas em toda a aplicação
 
-## index.php
+# Arquivos
+
+## /index.php
 Inicializa os arquivos autoload, config, e o router
 
-## config.php
+## /config.php
 Configurações básicas como BASE_URL, API_KEYS, Mapeamentos das middlewares, etc.
 Todas as configurações devem ser incluídas nesse arquivo
