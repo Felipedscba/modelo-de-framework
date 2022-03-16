@@ -1,0 +1,19 @@
+{
+    "name": "felipe-pc/model-base-framework",
+    "authors": [
+        {
+            "name": "Felipedscba",
+            "email": "felipedscba@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "App/",
+            "System\\": "System/"
+        },
+        "files": [
+            "app/helpers/global.php"
+        ]
+    },
+    "require": {}
+}
