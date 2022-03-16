@@ -1,4 +1,6 @@
-# modelo-de-framework
+# Projeto - Modelo de framework
+
+O objeto do projeto é criar um modelo de framework simples, que contenha as funções básicas de roteamento, controllers, models, middlewares e views.
 
 ## App
 Representa o conjunto de arquivos criados pelo usuário.
