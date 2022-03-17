@@ -12,7 +12,9 @@
             "System\\": "System/"
         },
         "files": [
-            "app/helpers/global.php"
+            "app/helpers/global.php",
+            "app/helpers/session.php",
+            "app/helpers/db.php"
         ]
     },
     "require": {}
