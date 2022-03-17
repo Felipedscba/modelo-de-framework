@@ -1,0 +1,17 @@
+<?php
+
+use System\Router;
+
+require './vendor/autoload.php';
+
+array_splice($argv, 0, 1);
+
+define('CLI_PARAMS', $argv);
+
+Router::is_cli();
+
+$router = new Router();
+
+include './routes.cli.php';
+
+$router->run();
