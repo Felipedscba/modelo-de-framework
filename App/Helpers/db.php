@@ -3,7 +3,17 @@
 // Database functions
 
 function db() {
-	return \Resources\Connection::con();
+	return \System\Connection::con();
+}
+
+function dbSQL($filename) {
+	$filename = ROOTPATH.'App\\Sqls\\'.$filename;
+	if(!file_exists($filename)) {
+		throw new \Exception ('Arquivo SQL não localizado!');
+	}
+	$sql = file_get_contents($sql);
+
+	return dbPrepareExecute($sql);
 }
 
 function dbPrepareExecute($sql, $params = []) {
@@ -31,7 +41,7 @@ function dbCount($sql, $params = [])
 	return dbFindFirst('select count(*) as total from ('.$sql.')', $params)['total'];
 }
 
-function dbPaginate(\Resources\Model $model)
+function dbPaginate(\System\Model $model)
 {
 	$page   = $_GET['page'] ?? 1;
 	$limit  = $_GET['limit'] ?? 15;

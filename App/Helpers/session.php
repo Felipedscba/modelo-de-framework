@@ -18,8 +18,8 @@ function session($key = null, $value = null)
 	}
 }
 
-function oldSave($params = []) {
-	flash('_fw_old', $params);
+function oldSave($params = null) {
+	flash('_fw_old', $params ? $params : session());
 }
 
 function old($key, $fallback = null) {
@@ -50,4 +50,26 @@ function flashAge() {
 	foreach($removeKeys as $key) {
 		unset($_SESSION['_fm']['flash'][$key]);
 	}
+}
+
+function user($key = null, $id = null, $forceReload = false)
+{	 
+	$user_row = null;
+
+	if(is_null($id) && is_null($GLOBALS['user'] ?? null)){
+		$id = session('user_id');
+		$forceReload = true;
+	} else if(is_null($id)){
+		$user_row = $GLOBALS['user'] ?? null;
+	}
+
+	if($id) {
+		$user_row = model('Users')->find($id);
+	}
+
+	if($forceReload) {
+		$GLOBALS['user'] = $user_row;
+	}
+
+	return $user_row ? ($key ? ($user_row[$key] ?? null) : $user_row) : null;
 }

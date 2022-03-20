@@ -8,6 +8,10 @@ class Model
 	protected $table = null;
 
 	protected $callbacks = [];
+	protected $fillable  = [];
+
+	protected $useTimestamps = false;
+	protected $useSoftDelete = false;
 
 	private $_where   = [];
 	private $_whereP  = [];
@@ -85,7 +89,13 @@ class Model
 
 	public function getSelectSql($limit = null, $offset = null) 
 	{
-		$where  = $this->getWhere();
+		$where  = $this->_where;
+
+		if($this->useSoftDelete) {
+			$where[] = 'deleted_at is null';
+		}
+
+		$where   = count($this->_where) > 0 ? ' where '.implode(' and ', $this->_where) : '';
 
 		$limit   = $limit ? ' limit '.$limit : '';
 		$offset  = $limit && $offset ? ', '.$offset : '';
@@ -115,9 +125,20 @@ class Model
 		$novo = !$this->isValidPk($data);
 
 		if($novo) {
+			if($this->useTimestamps) {
+				$data['created_at'] = date('Y-m-d H:i:s');
+				$data['updated_at'] = date('Y-m-d H:i:s');
+			}
+
 			$this->insert($data);
+
 			return db()->lastInsertId();
 		} else {
+
+			if($this->useTimestamps) {
+				$data['updated_at'] = date('Y-m-d H:i:s');
+			}
+
 			$id = $data[$this->pk];
 
 			unset($data[$this->pk]);
@@ -127,8 +148,22 @@ class Model
 		}
 	}
 
+	public function filterFillable($data) {
+		if($this->fillable && count($this->fillable) > 0) {
+			$fieldsFilter = [...$this->fillable];
+			$data         = array_filter($data, fn($key) => in_array($key, $fieldsFilter), ARRAY_FILTER_USE_KEY);
+		}
+		return $data;
+	}
+
 	public function insert($data)
 	{
+		$data = $this->filterFillable($data);
+
+		if(count($data) == 0) {
+			throw new \Exception("Não há dados para o insert em [{$this->table}]");
+		}
+
 		$this->dispatchCallbacks('insertBefore', $data);
 
 		$keys = implode(', ', array_keys($data));
@@ -149,8 +184,10 @@ class Model
 			$this->where($this->pk, $id);
 		}
 
+		$data = $this->filterFillable($data);
+
 		if(count($data) == 0) {
-			throw new \Exception("Não há dados para o update");
+			throw new \Exception("Não há dados para o update [{$this->table}]");
 		}
 
 		$where = $this->getWhere();
@@ -197,7 +234,13 @@ class Model
 
 		$this->dispatchCallbacks('deleteBefore', $data);
 
-		$sql    = 'delete from '.$this->table.$where;
+		$sql = null;
+
+		if($this->useSoftDelete) {
+			$sql    = 'update '.$this->table.' set deleted_at = current_timestamp '.$where;
+		} else {
+			$sql    = 'delete from '.$this->table.$where;
+		}
 		$params = $this->_whereP;
 
 		$this->clear();
@@ -230,12 +273,12 @@ class Model
 
 	private function dispatchCallbacks($name, &$payload)
 	{
-		if(isset($this->callbacks[$name])){
+		if(isset($this->callbacks[$name])) {
 
 			$callbacks = is_array($this->callbacks[$name]) ? $this->callbacks[$name] : [$this->callbacks[$name]];
 
 			foreach($callbacks as $funcName) {
-				$callbacks->$funcName($payload, $name);
+				$this->$funcName($payload, $name);
 			}
 		}
 	}

@@ -18,9 +18,9 @@ class Connection
 			$port = CONFIG['database']['port'] ?? 3306;
 
 			$dsn  = 'mysql:host='.$host.';dbname='.$dbname.';port='.$port.';charset=utf8mb4';
-
+			
 			if(!($host && $dbname && $user)) {
-				throw new Exception('Um dos parametros de conexão do DB está em branco [host, name, user]');
+				throw new \Exception('Um dos parametros de conexão do DB está em branco [host, name, user]');
 			}
 
 			self::$con = new \PDO($dsn, 

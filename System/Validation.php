@@ -11,11 +11,13 @@ class Validation {
 	private $fieldNames = [];
 
 	private $messages = [
-		'required' => 'O campo {field} deve ser informado',
-		'max' 	   => 'O campo {field} deve conter no máximo {rule} caracteres'
+		'required' => "O campo '{field}' deve ser informado",
+		'max' 	   => "O campo '{field}' deve conter no máximo {rule} caracteres",
+		'min' 	   => "O campo '{field}' deve conter pelo menos {rule} caracteres",
 	];
 
-	public function __construct(array $data, array $fieldNames = []) {
+	public function __construct(array $data, array $fieldNames = [])
+	{
 		$this->fieldNames = $fieldNames;
 		$this->data 	  = $data;
 	}
@@ -25,11 +27,13 @@ class Validation {
 		return count($this->errors[$name] ?? []) > 0;
 	}
 
-	public function first(string $name) {
+	public function first(string $name)
+	{
 		return $this->errors[$name][0];
 	}
 
-	public function append(string $name, $error) {
+	public function append(string $name, $error)
+	{
 		if(isset($this->errors[$name])) {
 			$this->errors[$name][] = $error;
 		} else {
@@ -37,11 +41,13 @@ class Validation {
 		}
 	}
 
-	public function get(string $name) {
+	public function get(string $name)
+	{
 		return $this->errors[$name];
 	}
 
-	public function all() {
+	public function all()
+	{
 		return $this->errors;
 	}
 
@@ -60,9 +66,15 @@ class Validation {
 					}
 				} else if(isset($this->data[$field])) {
 					$value = $this->data[$field];
+
 					$parts = explode(':', $rule);
+
 					if($parts[0] == 'max') {
 						if(strlen($value) > $parts[1]) {
+							$this->append($field, $this->getMessage($field, $parts[0], $parts[1]));
+						}
+					} else if($parts[0] == 'min') {
+						if(strlen($value) < $parts[1]) {
 							$this->append($field, $this->getMessage($field, $parts[0], $parts[1]));
 						}
 					}
@@ -70,7 +82,7 @@ class Validation {
 			}
 
 			if($isValid) {
-				$this->filtered[$field] = $this->data[$field];
+				$this->filtered[$field] = $this->data[$field] ?? null;
 			}
 		}
 
@@ -89,7 +101,8 @@ class Validation {
 		return str_replace(['{field}', '{value}', '{rule}'], [$field, $value, $ruleInfo], ($this->messages[$rule] ?? $rule));
 	}
 
-	public function filtered() {
+	public function filtered()
+	{
 		return $this->filtered;
 	}
 }

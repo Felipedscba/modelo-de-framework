@@ -1,19 +1,13 @@
 <?php
 
-use System\Router;
+use System\CLI;
 
 require './vendor/autoload.php';
 
+define('ROOTPATH', __DIR__.DIRECTORY_SEPARATOR);
 define('CONFIG', require ROOTPATH.'config.php');
 
 array_splice($argv, 0, 1);
 
-define('CLI_PARAMS', $argv);
+CLI::run($argv);
 
-Router::is_cli();
-
-$router = new Router();
-
-include './Routes/cli.php';
-
-$router->run();

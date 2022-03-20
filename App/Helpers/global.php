@@ -24,26 +24,8 @@ function request($key = null)
 	return $key ? (REQUEST_DATA[$key] ?? null) : REQUEST_DATA;
 }
 
-function user($key = null, $id = null, $forceReload = false)
-{	 
-	$user_row = null;
-
-	if(is_null($id) && is_null($GLOBALS['user'] ?? null)){
-		$id = session('user_id');
-		$forceReload = true;
-	} else if(is_null($id)){
-		$user_row = $GLOBALS['user'] ?? null;
-	}
-
-	if($id) {
-		$user_row = model('Users')->find($id);
-	}
-
-	if($forceReload) {
-		$GLOBALS['user'] = $user_row;
-	}
-
-	return $user_row ? ($key ? ($user_row[$key] ?? null) : $user_row) : null;
+function redirectBack() {
+	redirect($_SERVER['HTTP_REFERER']);
 }
 
 function redirect($path, $useBaseUrl = true) {
@@ -153,4 +135,18 @@ function placeholders($qtd) {
 	$str = substr($str, 0, strlen($str) - 2);
 	
 	return $str;
+}
+
+function str_to_plural($name) {
+	$lastchar = $name[strlen($name) - 1];
+	if(!in_array($lastchar, ['s', 'z', 'x'])) {
+		if(in_array($lastchar, ['a', 'e', 'i', 'o', 'u', 'r', 'm', 'n', 't'])) {
+			$lastchar .= 's';
+		} else if($lastchar == 'y') {
+			$lastchar = 'ies';
+		}
+		return substr($name, 0, strlen($name) - 1).$lastchar;
+	}
+
+	return $name;
 }
