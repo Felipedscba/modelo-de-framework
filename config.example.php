@@ -1,7 +1,7 @@
 <?php
 
 return [
-	'baseUrl' => 'http://localhost:81/',
+	'baseUrl' => 'http://projetos-desenvolvimento.com/model-base-framework/',
 
 	'middlewares' => [
 		'guest' => \App\Middlewares\RedirectIfAuthenticate::class,
@@ -10,7 +10,7 @@ return [
 
 	'database' => [
 		'user' => 'root',
-		'pass' => ''
+		'pass' => '',
 
 		'host' => 'localhost',
 		'port' => 3308,
@@ -18,6 +18,10 @@ return [
 	],
 	
 	'mail' => [
-
+		'type'     => 'smtp',
+		'host'     => 'smtp.gmail.com',
+		'port'     => '496',
+		'user'     => '',
+		'password' => ''
 	]
 ];

@@ -11,7 +11,8 @@ class Validation {
 	private $fieldNames = [];
 
 	private $messages = [
-		'required' => 'O campo {field} deve ser informado'
+		'required' => 'O campo {field} deve ser informado',
+		'max' 	   => 'O campo {field} deve conter no máximo {rule} caracteres'
 	];
 
 	public function __construct(array $data, array $fieldNames = []) {
@@ -58,7 +59,13 @@ class Validation {
 						break;
 					}
 				} else if(isset($this->data[$field])) {
+					$value = $this->data[$field];
 					$parts = explode(':', $rule);
+					if($parts[0] == 'max') {
+						if(strlen($value) > $parts[1]) {
+							$this->append($field, $this->getMessage($field, $parts[0], $parts[1]));
+						}
+					}
 				}
 			}
 
@@ -70,7 +77,7 @@ class Validation {
 		return $this->has();
 	}
 
-	public function getMessage($field, $rule)
+	public function getMessage($field, $rule, $ruleInfo = '')
 	{
 		$field = $this->fieldNames[$field] ?? $field;
 		$value = $this->data[$field] ?? null;
@@ -79,7 +86,7 @@ class Validation {
 			$value = json_encode($value);
 		}
 
-		return str_replace(['{field}', '{value}'], [$field, $value], ($this->messages[$rule] ?? $rule));
+		return str_replace(['{field}', '{value}', '{rule}'], [$field, $value, $ruleInfo], ($this->messages[$rule] ?? $rule));
 	}
 
 	public function filtered() {

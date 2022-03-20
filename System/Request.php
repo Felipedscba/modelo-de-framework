@@ -21,8 +21,8 @@ class Request {
 		return request($param);
 	}
 
-	public function validate(array $rules, $fieldNames = []) {
-		$params = defined('CLI_PARAMS') ? $this->cliParams : request();
+	public function validate(array $rules, $fieldNames = [], $values = null) {
+		$params = $values ?: (defined('CLI_PARAMS') ? $this->cliParams : request());
 
 		$verifyErrors = new Validation($params, $fieldNames);
 
@@ -35,6 +35,7 @@ class Request {
 					echo "Falha ao executar o comando.\n";
 					echo implode("\n", $errors)."\n";
 				}
+				exit;
 			} else {
 				oldSave($params);
 				flash('errors', $errors);

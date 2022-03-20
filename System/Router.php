@@ -13,18 +13,38 @@ class Router {
 	];
 
 	public static $_is_cli = false;
-
+ 
 	private $middlewares = [];
 	private $currentPath = null;
 	private $namespace   = '';
+	private $prefix  	 = '';
+	private $useCache 	 = false;
 
-	public function __construct() {
+	private $nameForSaveCache = null;
+
+	public function __construct($baseUrl = '') {
+		
 		$this->currentPath = self::$_is_cli ? (CLI_PARAMS[0] ?? '') : strtolower(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 		$this->method  	   = self::$_is_cli ? 'CLI' : $_SERVER['REQUEST_METHOD'];
+
+		if($baseUrl) {
+			$baseUrl = strtolower($baseUrl);
+
+			$scheme = $_SERVER['REQUEST_SCHEME'];
+			$host	= $_SERVER['HTTP_HOST'];
+			$port   = $_SERVER['SERVER_PORT'] == 80 ? '' : ':'.$_SERVER['SERVER_PORT'];
+
+			$this->currentPath = str_replace($baseUrl, '', "$scheme://$host$port".$this->currentPath) ?: '/';
+		}
 	}
 
-	public static function is_cli() {
+	public static function is_cli()
+	{
 		self::$_is_cli = true;
+	}
+
+	public function use_cache() {
+		$this->useCache = true;
 	}
 
 	public function middleware($path, $callback)
@@ -35,8 +55,31 @@ class Router {
 		];
 	}
 
+	public function loadCache($name, $force = false):bool
+	{
+		if(!$this->useCache) return false;
+
+		$filename = ROOTPATH."/cache/system-routes/$name.php";
+
+		if(!file_exists($filename) || $force) {
+			$this->nameForSaveCache = $name;
+			return false;
+		}
+
+		$cache = require $filename;
+
+		$this->middlewares = $cache['middlewares'];
+		self::$routes 	   = $cache['routes'];
+
+		return true;
+	}
+
 	public function namespace(string $namespace) {
 		$this->namespace = '\\'.$namespace;
+	}
+
+	public function prefix(string $prefix) {
+		$this->prefix = '\\'.$prefix;
 	}
 
 	public function get($path, $callback)
@@ -59,10 +102,27 @@ class Router {
 	}
 
 	public function add($method, $path, $callback) {
-		self::$routes[$method][$path] = gettype($callback) == 'string' ? $this->namespace.'\\'.$callback : $callback;
+		self::$routes[$method][$path] = gettype($callback) == 'string' && $this->namespace ? $this->namespace.'\\'.$callback : $callback;
 	}
 
 	public function run() {
+		if($this->nameForSaveCache) {
+			$name = $this->nameForSaveCache;
+			
+			$str = implode("\n", [
+				'<?php',
+				'return [',
+				"'routes' =>",
+				var_export(self::$routes, true),
+				',',
+				"'middlewares' =>",
+				var_export($this->middlewares, true),
+				'];'
+			]);
+
+			file_put_contents(ROOTPATH."/cache/system-routes/$name.php", $str);
+		}
+
 		$request = new Request();
 
 		$path   = $this->currentPath;
@@ -113,6 +173,7 @@ class Router {
 			$className = $parts[0][0] == '\\' ? $parts[0] : '\\App\\Controllers\\'.$parts[0];
 
 			$obj = new $className();
+
 
 			$return = call_user_func_array([$obj, $parts[1]], [$request]);
 
